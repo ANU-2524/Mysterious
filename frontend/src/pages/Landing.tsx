@@ -67,7 +67,7 @@ export function LandingPage() {
 
         {/* Headline */}
         <h1 className="text-6xl md:text-[10rem] font-medium text-white mb-2 tracking-tighter leading-[0.85] animate-fade-in-up">
-          Mysterious.
+          RiskLens.
         </h1>
         
         {/* Minimalist Forward Subtext */}

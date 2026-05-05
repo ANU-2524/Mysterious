@@ -96,7 +96,10 @@ async def add_to_watchlist(
 
     watchlist_item = Watchlist(user_id=current_user.user_id, entity_id=payload.entity_id)
     db.add(watchlist_item)
-    await db.flush()
+    await db.commit()
+    await db.refresh(watchlist_item)
+
+    return {"id": watchlist_item.id, "entity_id": payload.entity_id}
 
     return {"id": watchlist_item.id, "entity_id": payload.entity_id}
 
@@ -119,3 +122,4 @@ async def remove_from_watchlist(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not in watchlist")
 
     await db.delete(item)
+    await db.commit()

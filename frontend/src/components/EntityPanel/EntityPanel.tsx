@@ -6,21 +6,45 @@ import { SeverityBadge } from '@/components/SeverityBadge'
 import { RiskGauge } from '@/components/Charts/RiskGauge'
 import { RiskTimelineChart } from '@/components/Charts/RiskTimelineChart'
 import { apiClient } from '@/api/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function EntityPanel() {
   const { selectedEntity, closeEntityPanel } = useUIStore()
-  const { data: entity, isLoading } = useEntityDetail(selectedEntity?.id ?? null)
+  const { data: entity, isLoading, refetch } = useEntityDetail(selectedEntity?.id ?? null)
   const { data: timeline } = useEntityTimeline(selectedEntity?.id ?? null, 30)
   const [watchlistAdded, setWatchlistAdded] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const queryClient = useQueryClient()
 
-  async function handleAddToWatchlist() {
-    if (!entity) return
+  // Sync internal state with API data
+  useEffect(() => {
+    if (entity) {
+      setWatchlistAdded(entity.in_watchlist)
+    }
+  }, [entity])
+
+  async function handleToggleWatchlist() {
+    if (!entity || isSubmitting) return
+    setIsSubmitting(true)
+    
     try {
-      await apiClient.post('/watchlist', { entity_id: entity.id })
-      setWatchlistAdded(true)
-    } catch {
-      // Already in watchlist or not analyst
+      if (watchlistAdded) {
+        // DELETE endpoint needed for removal
+        await apiClient.delete(`/watchlist/${entity.id}`)
+        setWatchlistAdded(false)
+      } else {
+        await apiClient.post('/watchlist', { entity_id: entity.id })
+        setWatchlistAdded(true)
+      }
+      
+      // Invalidate both the watchlist list and the specific entity detail
+      await queryClient.invalidateQueries({ queryKey: ['watchlist'] })
+      await refetch()
+    } catch (err) {
+      console.error('Failed to update watchlist:', err)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -149,15 +173,27 @@ export function EntityPanel() {
 
             {/* Watchlist button */}
             <button
-              onClick={handleAddToWatchlist}
-              disabled={watchlistAdded}
-              className={`w-full py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              onClick={handleToggleWatchlist}
+              disabled={isSubmitting}
+              className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 border flex items-center justify-center gap-2 ${
                 watchlistAdded
-                  ? 'bg-cosmic-green/20 text-cosmic-green border border-cosmic-green/30 cursor-default'
-                  : 'btn-primary'
-              }`}
+                  ? 'bg-transparent border-red-500/40 text-red-400 hover:bg-red-500/10 hover:border-red-500'
+                  : 'bg-cosmic-cyan text-cosmic-bg-secondary hover:shadow-cyan-glow border-transparent'
+              } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {watchlistAdded ? '✓ Added to Watchlist' : '+ Add to Watchlist'}
+              {isSubmitting ? (
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : watchlistAdded ? (
+                <>
+                  <span className="text-lg">−</span>
+                  <span>Remove from Watchlist</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg">+</span>
+                  <span>Add to Watchlist</span>
+                </>
+              )}
             </button>
           </>
         )}

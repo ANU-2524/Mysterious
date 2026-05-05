@@ -1,6 +1,7 @@
 import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { useDashboardStats, useSectorRisks } from '@/api/risks'
+import { useWatchlist } from '@/api/watchlist'
 import { SeverityBadge } from '@/components/SeverityBadge'
 import { useUIStore } from '@/store/uiStore'
 
@@ -9,6 +10,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export function DashboardPage() {
   const { data: stats } = useDashboardStats()
   const { data: sectors } = useSectorRisks()
+  const { data: watchlist } = useWatchlist()
   const selectEntity = useUIStore((s) => s.selectEntity)
 
   return (
@@ -51,53 +53,55 @@ export function DashboardPage() {
       )}
 
       {/* Sector risk chart */}
-      {sectors && sectors.length > 0 && (
-        <div className="card">
-          <h2 className="text-sm font-semibold text-cosmic-text-primary mb-4">Risk by Sector</h2>
-          <div className="h-64">
-            <Bar
-              data={{
-                labels: sectors.map((s) => s.sector),
-                datasets: [
-                  {
-                    label: 'Avg Risk Score',
-                    data: sectors.map((s) => s.avg_risk_score),
-                    backgroundColor: 'rgba(0, 212, 255, 0.6)',
-                    borderColor: '#00D4FF',
-                    borderWidth: 1,
+      <div className="grid grid-cols-1 gap-6">
+        {sectors && sectors.length > 0 && (
+          <div className="card">
+            <h2 className="text-sm font-semibold text-cosmic-text-primary mb-4">Risk by Sector</h2>
+            <div className="h-64">
+              <Bar
+                data={{
+                  labels: sectors.map((s) => s.sector),
+                  datasets: [
+                    {
+                      label: 'Avg Risk Score',
+                      data: sectors.map((s) => s.avg_risk_score),
+                      backgroundColor: 'rgba(0, 212, 255, 0.6)',
+                      borderColor: '#00D4FF',
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      backgroundColor: 'rgba(13, 13, 32, 0.95)',
+                      titleColor: '#E8E8F0',
+                      bodyColor: '#8888aa',
+                      borderColor: 'rgba(0, 212, 255, 0.3)',
+                      borderWidth: 1,
+                    },
                   },
-                ],
-              }}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { display: false },
-                  tooltip: {
-                    backgroundColor: 'rgba(13, 13, 32, 0.95)',
-                    titleColor: '#E8E8F0',
-                    bodyColor: '#8888aa',
-                    borderColor: 'rgba(0, 212, 255, 0.3)',
-                    borderWidth: 1,
+                  scales: {
+                    x: {
+                      grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                      ticks: { color: '#555570' },
+                    },
+                    y: {
+                      min: 0,
+                      max: 100,
+                      grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                      ticks: { color: '#555570' },
+                    },
                   },
-                },
-                scales: {
-                  x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#555570' },
-                  },
-                  y: {
-                    min: 0,
-                    max: 100,
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#555570' },
-                  },
-                },
-              }}
-            />
+                }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Sector table */}
       {sectors && sectors.length > 0 && (

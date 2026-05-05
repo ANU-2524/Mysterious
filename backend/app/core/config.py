@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    app_name: str = "Oracle — Risk Intelligence Platform"
+    app_name: str = "RiskLens — Risk Intelligence Platform"
     environment: str = "development"
     log_level: str = "INFO"
     debug: bool = False

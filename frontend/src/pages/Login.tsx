@@ -59,7 +59,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-center text-gradient-cyan mb-2">Mysterious</h1>
+        <h1 className="text-2xl font-bold text-center text-gradient-cyan mb-2">RiskLens</h1>
         <p className="text-center text-cosmic-text-muted text-sm mb-8">
           AI-Powered Risk Intelligence Platform
         </p>

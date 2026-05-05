@@ -9,7 +9,15 @@ from sqlalchemy import desc, func, select
 
 from app.api.deps import CurrentUser, DBSession
 from app.core.config import settings
-from app.db.models import AISummary, Alert, Entity, RiskScore, SeverityLevel, Signal
+from app.db.models import (
+    AISummary,
+    Alert,
+    Entity,
+    RiskScore,
+    SeverityLevel,
+    Signal,
+    Watchlist,
+)
 from app.db.session import get_redis
 
 router = APIRouter(prefix="/entities", tags=["entities"])
@@ -74,6 +82,7 @@ class EntityDetail(BaseModel):
     latest_summary: Optional[AISummarySchema]
     recent_risk_scores: List[RiskScoreSchema]
     signal_count: int
+    in_watchlist: bool
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +159,7 @@ async def list_entities(
 
 
 @router.get("/{entity_id}", response_model=EntityDetail)
-async def get_entity(entity_id: int, db: DBSession, _: CurrentUser) -> EntityDetail:
+async def get_entity(entity_id: int, db: DBSession, current_user: CurrentUser) -> EntityDetail:
     """Return full entity detail including risk history and latest AI summary."""
     result = await db.execute(select(Entity).where(Entity.id == entity_id))
     entity = result.scalar_one_or_none()
@@ -184,6 +193,15 @@ async def get_entity(entity_id: int, db: DBSession, _: CurrentUser) -> EntityDet
     )
     signal_count = count_result.scalar_one()
 
+    # Watchlist status
+    watchlist_result = await db.execute(
+        select(Watchlist).where(
+            Watchlist.user_id == current_user.user_id,
+            Watchlist.entity_id == entity_id,
+        )
+    )
+    in_watchlist = watchlist_result.scalar_one_or_none() is not None
+
     return EntityDetail(
         id=entity.id,
         name=entity.name,
@@ -215,4 +233,5 @@ async def get_entity(entity_id: int, db: DBSession, _: CurrentUser) -> EntityDet
             for rs in recent_scores
         ],
         signal_count=signal_count,
+        in_watchlist=in_watchlist,
     )
