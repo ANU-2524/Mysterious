@@ -1,4 +1,4 @@
-# Mysterious — AI-Powered Global Business Risk Intelligence Platform
+# Mysterious — AI-Powered Global Business Risk Intelligence Platform...
 
 ![Oracle Banner](https://img.shields.io/badge/Oracle-Risk%20Intelligence-00D4FF?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square)
