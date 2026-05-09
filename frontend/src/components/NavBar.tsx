@@ -43,12 +43,19 @@ export function NavBar() {
     <nav className="flex items-center justify-between px-6 py-3 border-b border-cosmic-border bg-cosmic-bg-secondary/80 backdrop-blur-sm z-50 flex-shrink-0">
       {/* Logo */}
       <Link to="/app" className="flex items-center gap-3 group">
-        <div className="w-8 h-8 rounded-full bg-cosmic-cyan/20 border border-cosmic-cyan/40 flex items-center justify-center group-hover:shadow-cyan-glow transition-all duration-300">
-          <span className="text-cosmic-cyan text-sm font-bold">L</span>
+        <div className="relative">
+          <div className="w-10 h-10 rounded-lg bg-cosmic-cyan/10 border border-cosmic-cyan/30 flex items-center justify-center group-hover:border-cosmic-cyan/60 group-hover:shadow-[0_0_20px_rgba(0,212,255,0.3)] transition-all duration-500 overflow-hidden">
+            <span className="text-cosmic-cyan text-base font-bold relative z-10">RL</span>
+            <div className="absolute inset-0 bg-gradient-to-br from-cosmic-cyan/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[100%] transition-all duration-1000" />
+          </div>
         </div>
-        <span className="font-semibold text-cosmic-text-primary tracking-wide">
-          <span className="text-gradient-cyan">RiskLens</span>
-          <span className="text-cosmic-text-muted text-xs ml-2 font-mono uppercase tracking-tighter">risk intelligence</span>
+        <span className="flex flex-col">
+          <span className="font-bold text-lg tracking-tight leading-none">
+            <span className="text-white">RISK</span>
+            <span className="text-cosmic-cyan">LENS</span>
+          </span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-cosmic-text-muted mt-1">Strategic Intelligence</span>
         </span>
       </Link>
 

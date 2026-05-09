@@ -14,10 +14,20 @@ export function DashboardPage() {
   const selectEntity = useUIStore((s) => s.selectEntity)
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-cosmic-text-primary mb-1">Risk Dashboard</h1>
-        <p className="text-sm text-cosmic-text-secondary">Real-time intelligence across all monitored entities</p>
+    <div className="p-6 space-y-6 relative">
+      <div className="scanline" />
+      <div className="flex justify-between items-end border-b border-cosmic-border pb-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white mb-1">TERMINAL <span className="text-cosmic-cyan">01</span></h1>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-cosmic-green animate-pulse" />
+            <p className="text-[10px] font-mono uppercase tracking-widest text-cosmic-text-muted">Live Security Intelligence // System Active</p>
+          </div>
+        </div>
+        <div className="text-right hidden md:block">
+          <p className="text-[10px] font-mono text-cosmic-text-muted">LATENCY: 24ms</p>
+          <p className="text-[10px] font-mono text-cosmic-text-muted">UPTIME: 99.9%</p>
+        </div>
       </div>
 
       {/* Summary stats */}
@@ -142,10 +152,22 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
     red: 'text-cosmic-red',
   }[color]
 
+  const borderClass = {
+    cyan: 'border-cosmic-cyan/20',
+    amber: 'border-cosmic-amber/20',
+    red: 'border-cosmic-red/20',
+  }[color]
+
   return (
-    <div className="card">
-      <p className="text-xs text-cosmic-text-muted uppercase tracking-wider mb-2">{label}</p>
-      <p className={`text-3xl font-bold font-mono ${colorClass}`}>{value}</p>
+    <div className={`card-intelligence ${borderClass} group hover:border-opacity-50 transition-all duration-300`}>
+      <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+        <div className={`w-8 h-8 rounded-full border ${borderClass}`} />
+      </div>
+      <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-cosmic-text-muted mb-1">{label}</p>
+      <div className="flex items-baseline gap-2">
+        <p className={`text-2xl font-bold font-mono tracking-tighter ${colorClass}`}>{value}</p>
+        <div className={`w-1 h-1 rounded-full ${colorClass} animate-pulse`} />
+      </div>
     </div>
   )
 }

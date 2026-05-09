@@ -52,16 +52,19 @@ export function RiskFeed() {
   }, [])
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-cosmic-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-cosmic-text-primary">Live Risk Feed</h2>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-cosmic-green animate-pulse" />
-          <span className="text-xs text-cosmic-text-muted font-mono">LIVE</span>
+    <div className="flex flex-col h-full bg-cosmic-bg-secondary/30">
+      <div className="px-4 py-3 border-b border-cosmic-border flex items-center justify-between bg-black/40">
+        <div className="flex flex-col">
+          <h2 className="text-xs font-bold text-white uppercase tracking-widest">Signal Monitor</h2>
+          <span className="text-[10px] text-cosmic-cyan/50 font-mono">CHANNEL: 0x88-RISK</span>
+        </div>
+        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-cosmic-green/20 bg-cosmic-green/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cosmic-green animate-pulse shadow-[0_0_5px_rgba(52,199,89,0.8)]" />
+          <span className="text-[10px] text-cosmic-green font-mono font-bold">STREAMING</span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
         {isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -101,38 +104,46 @@ function AlertCard({ alert, onClick }: { alert: AlertRecord; onClick: () => void
   const borderColor = {
     CRITICAL: 'border-l-cosmic-red',
     HIGH: 'border-l-cosmic-amber',
-    MEDIUM: 'border-l-yellow-500',
+    MEDIUM: 'border-l-yellow-600',
     LOW: 'border-l-cosmic-cyan',
   }[alert.severity] ?? 'border-l-cosmic-border'
+
+  const glowColor = {
+    CRITICAL: 'group-hover:shadow-[0_0_15px_rgba(255,59,48,0.2)]',
+    HIGH: 'group-hover:shadow-[0_0_15px_rgba(255,184,0,0.15)]',
+    MEDIUM: 'group-hover:shadow-[0_0_15px_rgba(234,179,8,0.1)]',
+    LOW: 'group-hover:shadow-[0_0_15px_rgba(0,212,255,0.1)]',
+  }[alert.severity] ?? ''
 
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left card border-l-2 ${borderColor} hover:border-cosmic-cyan/40 transition-all duration-200 cursor-pointer`}
+      className={`w-full text-left card-intelligence border-l-2 ${borderColor} ${glowColor} p-2 hover:bg-cosmic-cyan/5 transition-all duration-300 group`}
       aria-label={`View details for ${alert.entity_name}`}
     >
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <span className="text-sm font-medium text-cosmic-text-primary truncate">
-          {alert.entity_name}
-        </span>
+      <div className="flex items-start justify-between gap-1 mb-1">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-mono text-cosmic-text-muted uppercase tracking-tighter">Entity ID: {alert.entity_id.toString().padStart(3, '0')}</span>
+          <span className="text-sm font-bold text-white tracking-tight group-hover:text-cosmic-cyan transition-colors">
+            {alert.entity_name}
+          </span>
+        </div>
         <SeverityBadge severity={alert.severity} />
       </div>
 
-      {alert.ai_summary && (
-        <p className="text-xs text-cosmic-text-secondary line-clamp-2 mb-1">
-          {alert.ai_summary}
-        </p>
-      )}
-
-      <div className="flex items-center justify-between">
-        {alert.current_score !== null && (
-          <span className="text-xs font-mono text-cosmic-text-muted">
-            Score: <span className="text-cosmic-cyan">{alert.current_score.toFixed(1)}</span>
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-cosmic-border/30">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-mono text-cosmic-text-muted uppercase">Risk Index</span>
+          <span className="text-xs font-mono font-bold text-cosmic-cyan">
+             {alert.current_score?.toFixed(1) ?? 'N/A'}/100
           </span>
-        )}
-        <span className="text-xs text-cosmic-text-muted">
-          {formatDistanceToNow(alert.triggered_at)}
-        </span>
+        </div>
+        <div className="text-right">
+          <span className="text-[9px] font-mono text-cosmic-text-muted block uppercase">Interval</span>
+          <span className="text-[11px] text-white/70 font-mono">
+            T-{formatDistanceToNow(alert.triggered_at)}
+          </span>
+        </div>
       </div>
     </button>
   )

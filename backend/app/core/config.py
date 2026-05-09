@@ -48,17 +48,12 @@ class Settings(BaseSettings):
     embedding_model: str = "all-MiniLM-L6-v2"
 
     # CORS
-    cors_origins: List[str] = ["http://localhost:5155", "http://localhost:3000"]
+    cors_origins: str = "http://localhost:5155,http://localhost:3000"
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors(cls, v: str | List[str]) -> List[str]:
-        """Parse comma-separated CORS origins string."""
-        if isinstance(v, str):
-            if not v or v.strip() == "":
-                return ["http://localhost:5155", "http://localhost:3000"]
-            return [origin.strip() for origin in v.split(",")]
-        return v
+    @property
+    def cors_origins_list(self) -> List[str]:
+        """Return CORS origins as a list."""
+        return [o.strip() for o in self.cors_origins.split(",")]
 
     # Rate limiting
     rate_limit_per_minute: int = 100

@@ -7,7 +7,7 @@ export function LoginPage() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('ANALYST')
+  const [role, setRole] = useState('analyst')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -27,10 +27,24 @@ export function LoginPage() {
       const { data } = await apiClient.post<{ access_token: string }>(endpoint, payload)
 
       // Decode JWT to extract user info (simple base64 decode)
-      const jwtPayload = JSON.parse(atob(data.access_token.split('.')[1]))
-      setAuth(data.access_token, jwtPayload.email, jwtPayload.role)
-      navigate('/')
+      try {
+        const base64Url = data.access_token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        }).join(''))
+        
+        const jwtPayload = JSON.parse(jsonPayload)
+        console.log('Decoded token:', jwtPayload)
+        
+        setAuth(data.access_token, jwtPayload.email || jwtPayload.sub, jwtPayload.role || 'ANALYST')
+        navigate('/app') // Changed from '/' to '/app' to ensure proper routing
+      } catch (decodeErr) {
+        console.error('Failed to decode token:', decodeErr)
+        setError('Session initialization failed. Please try again.')
+      }
     } catch (err: any) {
+      console.error('Auth error:', err)
       setError(err.response?.data?.detail ?? (isRegistering ? 'Registration failed' : 'Login failed'))
     } finally {
       setIsLoading(false)
@@ -38,109 +52,118 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-cosmic-gradient">
-      {/* Animated background particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-cosmic-cyan/30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 6}s`,
-              animationDuration: `${6 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#020205]">
+      <div className="scanline" />
+      
+      {/* High-tech background elements */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_rgba(0,212,255,0.1)_0%,_transparent_50%)]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cosmic-cyan/5 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] animate-pulse-slow" />
       </div>
 
-      <div className="card max-w-md w-full border border-cosmic-cyan/20 shadow-cyan-glow relative z-10">
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-cosmic-cyan/20 border-2 border-cosmic-cyan flex items-center justify-center">
-            <span className="text-cosmic-cyan text-3xl font-bold">M</span>
+      <div className="card-intelligence max-w-md w-full border-cosmic-cyan/20 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative z-10 p-8 backdrop-blur-xl">
+        {/* Logo Unit */}
+        <div className="flex flex-col items-center justify-center mb-10">
+          <div className="relative group mb-4">
+            <div className="w-16 h-16 rounded-xl bg-cosmic-cyan/10 border border-cosmic-cyan/40 flex items-center justify-center group-hover:border-cosmic-cyan transition-all duration-500 overflow-hidden">
+               <span className="text-cosmic-cyan text-2xl font-bold font-mono">RL</span>
+               <div className="absolute inset-0 bg-gradient-to-t from-cosmic-cyan/20 to-transparent" />
+            </div>
+            <div className="absolute -inset-2 bg-cosmic-cyan/10 blur-xl opacity-50 rounded-full" />
+          </div>
+          
+          <div className="text-center">
+            <h1 className="text-3xl font-black tracking-tighter text-white leading-none">
+              RISK<span className="text-cosmic-cyan">LENS</span>
+            </h1>
+            <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-cosmic-text-muted mt-2 border-t border-cosmic-border pt-1">
+              Auth Gateway // Node 01
+            </p>
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-center text-gradient-cyan mb-2">RiskLens</h1>
-        <p className="text-center text-cosmic-text-muted text-sm mb-8">
-          {isRegistering ? 'Create your Analyst account' : 'AI-Powered Risk Intelligence Platform'}
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-cosmic-text-muted uppercase tracking-wider mb-2">
-              Email
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1">
+            <label className="block text-[10px] font-mono text-cosmic-text-muted uppercase tracking-[0.2em]">
+              User Identifier
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-cosmic w-full"
-              required
-              autoComplete="email"
-            />
+            <div className="relative">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ACCESS_EMAIL@SYSTEM"
+                className="w-full bg-black/40 border border-cosmic-border px-4 py-3 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan/30 transition-all placeholder:opacity-30"
+                required
+                autoComplete="email"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-cosmic-text-muted uppercase tracking-wider mb-2">
-              Password
+          <div className="space-y-1">
+            <label className="block text-[10px] font-mono text-cosmic-text-muted uppercase tracking-[0.2em]">
+              Security Key
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-cosmic w-full"
-              required
-              autoComplete={isRegistering ? "new-password" : "current-password"}
-            />
+            <div className="relative">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-black/40 border border-cosmic-border px-4 py-3 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cosmic-cyan focus:ring-1 focus:ring-cosmic-cyan/30 transition-all placeholder:opacity-30"
+                required
+                autoComplete={isRegistering ? "new-password" : "current-password"}
+              />
+            </div>
           </div>
 
           {isRegistering && (
-            <div>
-              <label className="block text-xs text-cosmic-text-muted uppercase tracking-wider mb-2">
-                Role
+            <div className="space-y-1">
+              <label className="block text-[10px] font-mono text-cosmic-text-muted uppercase tracking-[0.2em]">
+                Access Level
               </label>
               <select 
                 value={role} 
                 onChange={(e) => setRole(e.target.value)}
-                className="input-cosmic w-full bg-cosmic-bg"
+                className="w-full bg-black/40 border border-cosmic-border px-4 py-3 rounded-lg text-sm font-mono text-white focus:outline-none focus:border-cosmic-cyan transition-all appearance-none"
               >
-                <option value="ANALYST">Analyst</option>
-                <option value="VIEWER">Viewer</option>
+                <option value="analyst">LEVEL 03: ANALYST</option>
+                <option value="viewer">LEVEL 01: VIEWER</option>
               </select>
             </div>
           )}
 
           {error && (
-            <div className="bg-cosmic-red-glow border border-cosmic-red/30 rounded-lg p-3 text-sm text-cosmic-red">
-              {error}
+            <div className="bg-cosmic-red/10 border border-cosmic-red/30 rounded p-3 text-[11px] font-mono text-cosmic-red animate-shake">
+              <span className="font-bold mr-2">[ERROR_AUTH]:</span> {error}
             </div>
           )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-primary w-full py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-cosmic-cyan hover:bg-[#00e5ff] text-black font-bold py-3 rounded-lg transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:grayscale font-mono text-sm tracking-widest shadow-[0_0_20px_rgba(0,212,255,0.2)]"
           >
-            {isLoading ? (isRegistering ? 'Registering...' : 'Signing in...') : (isRegistering ? 'Create Account' : 'Sign In')}
+            {isLoading 
+              ? (isRegistering ? "INITIALIZING..." : "LOGGING_IN...") 
+              : (isRegistering ? "INITIALIZE_IDENTITY" : "ESTABLISH_SESSION")}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 flex flex-col items-center gap-4">
           <button 
             onClick={() => setIsRegistering(!isRegistering)}
-            className="text-xs text-cosmic-cyan hover:underline"
+            className="text-[10px] font-mono text-cosmic-text-muted hover:text-cosmic-cyan transition-colors uppercase tracking-widest underline underline-offset-4 decoration-cosmic-border"
           >
-            {isRegistering ? 'Already have an account? Sign in' : "Don't have an account? Register"}
+            {isRegistering ? '// Return to established node' : '// Request new credentials'}
           </button>
         </div>
 
         <div className="mt-6 pt-6 border-t border-cosmic-border">
           <p className="text-xs text-cosmic-text-muted text-center mb-2">Demo Credentials:</p>
-          <div className="space-y-1 text-xs text-cosmic-text-secondary italic opacity-70">
-            <p>demo@RiskLens.ai / RiskLens2024</p>
+          <div className="space-y-1 text-xs text-cosmic-text-secondary italic opacity-70 text-center">
+            <p>test@test.com / password123</p>
           </div>
         </div>
       </div>
